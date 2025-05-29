@@ -26,3 +26,5 @@ ASSET_GROUP_DATA_PREPROCESSING = "data_preprocessing"
 ASSET_GROUP_MODEL_TRAINING = "model_training"
 
 AUTHOR = "Jan Willem Kleinrouweler"
+
+LAKEFS_BRANCH = "main"
