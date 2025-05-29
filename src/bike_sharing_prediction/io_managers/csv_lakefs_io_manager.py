@@ -75,7 +75,7 @@ class CSVLakeFSIOManager(dg.ConfigurableIOManager):
         str
             A path to the asset in a LakeFS repository.
         """
-        return f"{self.base_path}/{'/'.join(context.asset_key.path)}.{self.extension}"
+        return f"{self.base_path}/{'/'.join(context.asset_key.path)}{self.extension}"
 
     def handle_output(self, context: dg.OutputContext, obj: pd.DataFrame):
         """Write a DataFrame to LakeFS as a versioned CSV file and commit it.
