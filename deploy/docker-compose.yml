@@ -1,0 +1,12 @@
+services:
+    lakefs:
+        image: treeverse/lakefs:latest
+        ports:
+            - 8000:8000
+        environment:
+            - LAKEFS_INSTALLATION_USER_NAME=lakefs
+            - LAKEFS_INSTALLATION_ACCESS_KEY_ID=lakefs
+            - LAKEFS_INSTALLATION_SECRET_ACCESS_KEY=appliedai
+            - LAKEFS_DATABASE_TYPE=local
+            - LAKEFS_AUTH_ENCRYPT_SECRET_KEY=secret
+            - LAKEFS_BLOCKSTORE_TYPE=local
