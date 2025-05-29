@@ -11,6 +11,7 @@ dependencies = [
     "dagster>=1.10.17",
     "dagster-webserver>=1.10.17",
     "joblib>=1.5.1",
+    "lakefs-spec>=0.11.3",
     "mlflow>=2.22.0",
     "pandas>=2.2.3",
     "scikit-learn>=1.6.1",
