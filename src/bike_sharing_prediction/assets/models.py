@@ -1,8 +1,7 @@
 """Bike sharing prediction model assets."""
 
-from typing import Any
-
 import dagster as dg
+import mlflow
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
@@ -20,12 +19,14 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 from bike_sharing_prediction.config import (
     ASSET_GROUP_MODEL_TRAINING,
+    AUTHOR,
     CATEGORICAL_FEATURES,
     FEATURES,
     NUMERICAL_FEATURES,
     RANDOM_STATE,
     TARGET,
 )
+from bike_sharing_prediction.utils import mlflow_get_run_id
 
 
 def build_pipeline(estimator: BaseEstimator):
@@ -140,6 +141,9 @@ def create_model_asset(
     ) -> BaseEstimator:
         """Train a regression model and log evaluation metrics.
 
+        The model parameters, performance metrics, and model file are logged
+        to MLflow.
+
         Parameters
         ----------
         context : dg.AssetExecutionContext
@@ -154,19 +158,61 @@ def create_model_asset(
         BaseEstimator
             A scikit-learn compatible pipeline that is fitted and evaluated.
         """
+        dagster_run_id = context.run.run_id[:8]
 
-        pipeline = build_pipeline(estimator)
-        pipeline.fit(
-            train_data_log_transformed[FEATURES],
-            train_data_log_transformed[TARGET],
-        )
+        pipeline_run_name = f"pipeline-{dagster_run_id}"
+        pipeline_run_id = mlflow_get_run_id(pipeline_run_name)
 
-        predictions = pipeline.predict(test_data[FEATURES])
-        predictions = np.expm1(predictions)
+        training_run_name = f"{asset_name}-{dagster_run_id}"
 
-        metrics = compute_performance_metrics(test_data[TARGET], predictions)
+        # Outer mlflow run is shared across the pipeline run, nested training
+        # run is below.
+        with (
+            mlflow.start_run(
+                run_name=pipeline_run_name,
+                run_id=pipeline_run_id,
+            ),
+            mlflow.start_run(
+                run_name=training_run_name,
+                nested=True,
+            ),
+        ):
+            # Log run metadata to mlflow
+            mlflow.set_tags(
+                {
+                    "author": AUTHOR,
+                    "dagster_run_id": context.run.run_id,
+                },
+            )
 
-        context.add_output_metadata(metrics)
+            # Fit the pipeline
+            pipeline = build_pipeline(estimator)
+            pipeline.fit(
+                train_data_log_transformed[FEATURES],
+                train_data_log_transformed[TARGET],
+            )
+
+            # Log model parameters to mlflow
+            mlflow.log_params(pipeline.get_params())
+
+            # Create predictions
+            predictions = pipeline.predict(test_data[FEATURES])
+            predictions = np.expm1(predictions)
+
+            # Compute and log performance metrics to mlflow and dagster
+            metrics = compute_performance_metrics(
+                test_data[TARGET], predictions
+            )
+
+            mlflow.log_metrics(metrics)
+            context.add_output_metadata(metrics)
+
+            # Log the model to mlflow
+            mlflow.sklearn.log_model(
+                sk_model=pipeline,
+                artifact_path="model",
+                registered_model_name=None,  # Do not register the model
+            )
 
         return pipeline
 
