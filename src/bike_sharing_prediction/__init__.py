@@ -18,6 +18,10 @@ from bike_sharing_prediction.assets.train_data_log_transformed import (
 from bike_sharing_prediction.assets.train_test import train_test
 from bike_sharing_prediction.config import (
     LAKEFS_BRANCH,
+    LAKEFS_HOST,
+    LAKEFS_PASSWORD,
+    LAKEFS_REPOSITORY,
+    LAKEFS_USERNAME,
 )
 from bike_sharing_prediction.io_managers.csv_lakefs_io_manager import (
     CSVLakeFSIOManager,
@@ -29,22 +33,23 @@ from bike_sharing_prediction.resources.data_loaders import (
     LakeFSDataLoader,
 )
 from bike_sharing_prediction.resources.lakefs_client import LakeFSClient
+from bike_sharing_prediction.sensor import new_data_sensor
 
 lakefs_client = LakeFSClient(
-    host=os.getenv("LAKEFS_HOST"),
-    username=os.getenv("LAKEFS_USERNAME"),
-    password=os.getenv("LAKEFS_PASSWORD"),
+    host=LAKEFS_HOST,
+    username=LAKEFS_USERNAME,
+    password=LAKEFS_PASSWORD,
 )
 
 lakefs_data_loader = LakeFSDataLoader(
     lakefs_client=lakefs_client,
-    lakefs_repository=os.getenv("LAKEFS_REPOSITORY"),
+    lakefs_repository=LAKEFS_REPOSITORY,
     lakefs_branch=LAKEFS_BRANCH,
 )
 
 csv_lakefs_io_manager = CSVLakeFSIOManager(
     lakefs_client=lakefs_client,
-    lakefs_repository=os.getenv("LAKEFS_REPOSITORY"),
+    lakefs_repository=LAKEFS_REPOSITORY,
 )
 
 definitions = dg.Definitions(
@@ -62,4 +67,7 @@ definitions = dg.Definitions(
         "csv_io_manager": csv_lakefs_io_manager,
         "pkl_io_manager": PickleFileSystemIOManager(base_dir="dg_models"),
     },
+    sensors=[
+        new_data_sensor,
+    ],
 )

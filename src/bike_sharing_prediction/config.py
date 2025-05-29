@@ -1,3 +1,5 @@
+import os
+
 NUMERICAL_FEATURES = [
     "temp",
     "hum",
@@ -26,5 +28,10 @@ ASSET_GROUP_DATA_PREPROCESSING = "data_preprocessing"
 ASSET_GROUP_MODEL_TRAINING = "model_training"
 
 AUTHOR = "Jan Willem Kleinrouweler"
+
+LAKEFS_HOST = os.environ["LAKEFS_HOST"]
+LAKEFS_REPOSITORY = os.environ["LAKEFS_REPOSITORY"]
+LAKEFS_USERNAME = os.environ["LAKEFS_USERNAME"]
+LAKEFS_PASSWORD = os.environ["LAKEFS_PASSWORD"]
 
 LAKEFS_BRANCH = "main"
