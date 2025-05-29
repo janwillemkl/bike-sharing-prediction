@@ -1,0 +1,27 @@
+[project]
+name = "bike-sharing-prediction"
+version = "0.1.0"
+description = "Bike sharing prediction pipeline"
+readme = "README.md"
+authors = [
+    { name = "Jan Willem Kleinrouweler", email = "janwillemkl@gmail.com" },
+]
+requires-python = ">=3.11"
+dependencies = [
+    "dagster>=1.10.17",
+    "dagster-webserver>=1.10.17",
+    "joblib>=1.5.1",
+    "pandas>=2.2.3",
+    "scikit-learn>=1.6.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 80
+target-version = "py311"
+select = ["I", "E", "F", "B", "UP", "N", "SIM"]
+exclude = [".venv", ".git"]
+ignore = ["E501"]
